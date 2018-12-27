@@ -1,0 +1,15 @@
+{
+  "name": "leetlink_backend",
+  "version": "1.0.0",
+  "description": "Backend for leetLink",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kim Gustafsson",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4",
+    "morgan": "^1.9.1"
+  }
+}
