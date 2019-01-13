@@ -9,8 +9,16 @@ const dbUrl = 'mongodb://localhost:27017';
 const dbName = 'leetLinkDB';
 const collectionName = 'urls';
 const domain = 'http://ec2-3-17-28-164.us-east-2.compute.amazonaws.com:9000/';
+// const domain = 'http://localhost:9000/';
 
 app.use(morgan('short'));
+
+// Yes, I know this is not good for security
+app.use(function(req, res, next) {
+   res.header("Access-Control-Allow-Origin", "*");
+   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+   next();
+ });
 
 app.listen(port, () => {
    console.log('leetLink server is running on port', port);
