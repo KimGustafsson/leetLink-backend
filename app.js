@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const port = '9000';
 const morgan = require('morgan');
@@ -8,21 +9,18 @@ const assert = require('assert');
 const dbUrl = 'mongodb://localhost:27017';
 const dbName = 'leetLinkDB';
 const collectionName = 'urls';
-const domain = 'http://ec2-3-17-28-164.us-east-2.compute.amazonaws.com:9000/';
-// const domain = 'http://localhost:9000/';
+// const domain = 'http://ec2-3-17-28-164.us-east-2.compute.amazonaws.com:9000/';
+const domain = 'http://localhost:9000/';
 
 app.use(morgan('short'));
-
-// Yes, I know this is not good for security
-app.use(function(req, res, next) {
-   res.header("Access-Control-Allow-Origin", "*");
-   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-   next();
- });
+app.use(cors());
 
 app.listen(port, () => {
    console.log('leetLink server is running on port', port);
 });
+
+// Just for the damn favicon request
+app.get('/favicon.ico', (req, res) => res.status(204));
 
 // Generate shorter url and put pair in DB
 app.get('/api/generate/:url', (req, res) => {
@@ -30,14 +28,15 @@ app.get('/api/generate/:url', (req, res) => {
    let newUrl = new urlObj(req.params.url, getRandomId());
    console.log(newUrl);
    saveToDB(newUrl);
-   res.send(domain + newUrl.generatedString);
+   res.send(JSON.stringify(domain + newUrl.generatedString));
 });
 
 // Fetch url from DB
 app.get('/:shortUrl', (req, res) => {
    console.log('Fetching url from: ', req.params.shortUrl);
    fetchFromDB(req.params.shortUrl, (answer) => {
-      res.send(answer);
+      // res.send(JSON.stringify(answer));
+      res.redirect('http://' + answer.originalUrl);
    });
 });
 
