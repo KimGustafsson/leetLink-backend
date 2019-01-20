@@ -1,7 +1,7 @@
 const express = require('express');
-const cors = require('cors');
-const app = express();
 const port = '9000';
+const app = express();
+const cors = require('cors');
 const morgan = require('morgan');
 const randomstring = require('randomstring');
 const MongoClient = require('mongodb').MongoClient;
@@ -11,9 +11,11 @@ const dbName = 'leetLinkDB';
 const collectionName = 'urls';
 // const domain = 'http://ec2-3-17-28-164.us-east-2.compute.amazonaws.com:9000/';
 const domain = 'http://localhost:9000/';
-
+var bodyParser = require("body-parser");
 app.use(morgan('short'));
 app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 app.listen(port, () => {
    console.log('leetLink server is running on port', port);
@@ -23,12 +25,14 @@ app.listen(port, () => {
 app.get('/favicon.ico', (req, res) => res.status(204));
 
 // Generate shorter url and put pair in DB
-app.get('/api/generate/:url', (req, res) => {
-   console.log('Generate new url for: ', req.params.url);
-   let newUrl = new urlObj(req.params.url, getRandomId());
+app.post('/api/generate', (req, res) => {
+   console.log('Generate new url for: ', req.body.url);
+   let newUrl = new urlObj(req.body.url, getRandomId());
    console.log(newUrl);
    saveToDB(newUrl);
-   res.send(JSON.stringify(domain + newUrl.generatedString));
+   res.send(JSON.stringify({
+      generatedUrl: domain + newUrl.generatedString
+   }));
 });
 
 // Fetch url from DB
@@ -36,7 +40,8 @@ app.get('/:shortUrl', (req, res) => {
    console.log('Fetching url from: ', req.params.shortUrl);
    fetchFromDB(req.params.shortUrl, (answer) => {
       // res.send(JSON.stringify(answer));
-      res.redirect('http://' + answer.originalUrl);
+      console.log('Svar:', answer);
+      res.redirect(answer.originalUrl);
    });
 });
 
