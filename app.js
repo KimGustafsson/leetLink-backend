@@ -39,12 +39,17 @@ app.post('/api/generate', (req, res) => {
 app.get('/:shortUrl', (req, res) => {
    console.log('Fetching url from: ', req.params.shortUrl);
    fetchFromDB(req.params.shortUrl, (answer) => {
-      // res.send(JSON.stringify(answer));
-      console.log('Svar:', answer);
-      res.redirect(answer.originalUrl);
+      answer = hasHttp(answer.originalUrl) ? answer.originalUrl : 'https://' + answer.originalUrl;
+      res.redirect(answer);
    });
 });
 
+// Check if the url has http or https
+const hasHttp = (url) => {
+   return url.indexOf("http://") == 0 || url.indexOf("https://") == 0;
+}
+
+// Generate a random  six character alphanumeric string
 const getRandomId = () => {
    return randomstring.generate({
       length: 6,
@@ -52,6 +57,7 @@ const getRandomId = () => {
    });
 }
 
+// Fetch url from mongoDB
 const fetchFromDB = (url, callback) => {
    MongoClient.connect(dbUrl, (err, client) => {
       const db = client.db(dbName);
@@ -65,6 +71,7 @@ const fetchFromDB = (url, callback) => {
    });
 }
 
+// Save url to mongoDB
 const saveToDB = (urlObj) => {
    MongoClient.connect(dbUrl, (err, client) => {
       const db = client.db(dbName);
@@ -77,6 +84,7 @@ const saveToDB = (urlObj) => {
    });
 }
 
+// Construct the insert query
 const insertUrl = (urlObj, db, callback) => {
    const collection = db.collection(collectionName);
    collection.insertOne({
@@ -89,6 +97,7 @@ const insertUrl = (urlObj, db, callback) => {
    });
 }
 
+// Construct the fetch query
 const fetchUrl = (url, db, callback) => {
    const collection = db.collection(collectionName);
    collection.findOne({
@@ -100,6 +109,7 @@ const fetchUrl = (url, db, callback) => {
    });
 }
 
+// A object for the urls (might be just a bit overkill)
 class urlObj {
    constructor(originalUrl, generatedString) {
       this.originalUrl = originalUrl;
